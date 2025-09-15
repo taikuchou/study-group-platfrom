@@ -1,0 +1,990 @@
+{
+  "info": {
+    "name": "Study Group Platform API",
+    "description": "Complete API collection for Study Group Platform with authentication and CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "study-group-platform-api-2025",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "topicId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId", 
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check server health and status"
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"status\": \"OK\",\n    \"timestamp\": \"2025-09-12T12:46:17.949Z\",\n    \"service\": \"Study Group Platform API\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains access token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    ",
+                  "    // Save tokens for other requests",
+                  "    pm.environment.set('accessToken', jsonData.accessToken);",
+                  "    pm.environment.set('userId', jsonData.user.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with admin credentials"
+          },
+          "response": [
+            {
+              "name": "Admin Login Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"Alice Chen\",\n        \"email\": \"alice@example.com\",\n        \"role\": \"admin\",\n        \"createdAt\": \"2025-09-12\"\n    },\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with regular user credentials"
+          }
+        },
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user account"
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Get current authenticated user profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topics",
+      "item": [
+        {
+          "name": "List All Topics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is array of topics\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.expect(jsonData[0]).to.have.property('id');",
+                  "        pm.expect(jsonData[0]).to.have.property('title');",
+                  "        pm.expect(jsonData[0]).to.have.property('sessions');",
+                  "        pm.environment.set('topicId', jsonData[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            },
+            "description": "Get all topics with embedded sessions"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{accessToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/topics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["topics"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n    {\n        \"id\": 1,\n        \"title\": \"React 進階開發\",\n        \"startDate\": \"2024-02-01\",\n        \"endDate\": \"2024-04-30\",\n        \"intervalType\": \"WEEKLY\",\n        \"outline\": \"深入學習 React 的進階概念，包括 Hook、Context、Performance 等\",\n        \"referenceUrls\": [\"https://reactjs.org\", \"https://react.dev\"],\n        \"keywords\": [\"React\", \"JavaScript\", \"Frontend\"],\n        \"attendees\": [1, 2, 3],\n        \"createdBy\": 1,\n        \"createdAt\": \"2025-09-12\",\n        \"sessions\": [\n            {\n                \"id\": 1,\n                \"topicId\": 1,\n                \"presenterId\": 2,\n                \"startDateTime\": \"2024-02-09 00:00\",\n                \"scope\": \"React Hooks 基礎\",\n                \"outline\": \"useState, useEffect 的深入使用\",\n                \"noteLinks\": [],\n                \"references\": [],\n                \"attendees\": [1, 2, 3]\n            }\n        ]\n    }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Topic by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "{{topicId}}"]
+            },
+            "description": "Get specific topic with sessions"
+          }
+        },
+        {
+          "name": "Create New Topic",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Vue.js 進階開發\",\n  \"startDate\": \"2024-05-01\",\n  \"endDate\": \"2024-07-31\",\n  \"intervalType\": \"WEEKLY\",\n  \"outline\": \"深入學習 Vue.js 3 的 Composition API 和進階功能\",\n  \"referenceUrls\": [\"https://vuejs.org\", \"https://v3.vuejs.org\"],\n  \"keywords\": [\"Vue.js\", \"JavaScript\", \"Frontend\", \"Composition API\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            },
+            "description": "Create a new study topic"
+          }
+        },
+        {
+          "name": "Update Topic",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Vue.js 進階開發 - 更新版\",\n  \"outline\": \"深入學習 Vue.js 3 的 Composition API、進階功能和最佳實踐\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/topics/{{topicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "{{topicId}}"]
+            },
+            "description": "Update an existing topic"
+          }
+        },
+        {
+          "name": "Join Topic",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/{{topicId}}/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "{{topicId}}", "join"]
+            },
+            "description": "Join a study topic as attendee"
+          }
+        },
+        {
+          "name": "Leave Topic",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/{{topicId}}/leave",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "{{topicId}}", "leave"]
+            },
+            "description": "Leave a study topic"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "List All Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions"]
+            },
+            "description": "Get all study sessions"
+          }
+        },
+        {
+          "name": "Get Sessions by Topic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is array of sessions\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('sessionId', jsonData[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics/{{topicId}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics", "{{topicId}}", "sessions"]
+            },
+            "description": "Get all sessions for a specific topic"
+          }
+        },
+        {
+          "name": "Create Session (Simple)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": 1,\n  \"presenterId\": 2,\n  \"startDateTime\": \"2024-03-15 19:00\",\n  \"scope\": \"Advanced React Patterns\",\n  \"outline\": \"Learning render props, higher-order components, and compound components\",\n  \"noteLinks\": [\"https://example.com/notes\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions"]
+            },
+            "description": "Create a simple session without complex references"
+          }
+        },
+        {
+          "name": "Create Session with Complex References",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"topicId\": 1,\n  \"presenterId\": 2,\n  \"startDateTime\": \"2024-03-22 19:00\",\n  \"scope\": \"React Testing Strategies\",\n  \"outline\": \"Unit testing, integration testing, and E2E testing for React applications\",\n  \"references\": [\n    {\n      \"label\": \"React Testing Library Documentation\",\n      \"description\": \"Official documentation for React Testing Library\",\n      \"url\": \"https://testing-library.com/docs/react-testing-library/intro/\",\n      \"category\": \"web\"\n    },\n    {\n      \"label\": \"Testing React Applications\",\n      \"description\": \"Comprehensive book on React testing strategies\",\n      \"url\": \"https://www.amazon.com/Testing-React-Applications-Max-Stoiber/dp/1617295159\",\n      \"category\": \"book\"\n    },\n    {\n      \"label\": \"Modern Testing Practices in React\",\n      \"description\": \"Research paper on current testing methodologies\",\n      \"url\": \"https://doi.org/10.1145/react-testing-2024\",\n      \"category\": \"paper\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions"]
+            },
+            "description": "Create a session with complex reference objects (may fail due to Prisma client issue)"
+          }
+        },
+        {
+          "name": "Get Session by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}"]
+            },
+            "description": "Get specific session details"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interactions",
+      "item": [
+        {
+          "name": "List All Interactions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Get all interactions across all sessions"
+          }
+        },
+        {
+          "name": "Get Interactions by Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/{{sessionId}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["sessions", "{{sessionId}}", "interactions"]
+            },
+            "description": "Get all interactions for a specific session"
+          }
+        },
+        {
+          "name": "Create Question Interaction",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"question\",\n  \"sessionId\": 1,\n  \"content\": \"What's the difference between useState and useReducer?\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Create a question interaction"
+          }
+        },
+        {
+          "name": "Create Note Link Interaction",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"noteLink\",\n  \"sessionId\": 1,\n  \"label\": \"Session Notes\",\n  \"description\": \"Detailed notes from today's React session\",\n  \"url\": \"https://notion.so/react-session-notes\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Create a note link interaction"
+          }
+        },
+        {
+          "name": "Create Reference Interaction",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"reference\",\n  \"sessionId\": 1,\n  \"label\": \"React Hooks API Reference\",\n  \"description\": \"Complete reference for all React hooks\",\n  \"url\": \"https://react.dev/reference/react\",\n  \"category\": \"web\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Create a reference interaction with category (may fail due to Prisma client issue)"
+          }
+        },
+        {
+          "name": "Create Weekly Insight",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"weeklyInsight\",\n  \"sessionId\": 1,\n  \"content\": \"This week I learned that React hooks have dependency arrays that help optimize performance by preventing unnecessary re-renders.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Create a weekly insight interaction"
+          }
+        },
+        {
+          "name": "Create Speaker Feedback",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"speakerFeedback\",\n  \"sessionId\": 1,\n  \"content\": \"Great presentation! The examples were very clear and easy to follow. Would love to see more advanced patterns next time.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["interactions"]
+            },
+            "description": "Create speaker feedback interaction"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Get all users (admin only)"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Get specific user by ID"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            },
+            "description": "Update user profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Unauthorized Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/topics",
+              "host": ["{{baseUrl}}"],
+              "path": ["topics"]
+            },
+            "description": "Test request without authentication token"
+          },
+          "response": [
+            {
+              "name": "No Token Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/topics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["topics"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"error\": \"No token provided\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invalid Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Test login with invalid credentials"
+          }
+        }
+      ]
+    }
+  ]
+}

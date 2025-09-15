@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  # db:
+  #   image: postgres:16
+  #   container_name: sgp_db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: study_group
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U app -d study_group"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 6
+
+  # dbadmin:
+  #   image: dpage/pgadmin4:8
+  #   container_name: sgp_pgadmin
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ken.java@gmail.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   ports:
+  #     - "5050:80"
+  #   # volumes:
+  #   #   - pgadmin_data:/var/lib/pgadmin
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.no-build   # or Dockerfile.debian-new if you compile in-image
+    container_name: sgp_server
+    # depends_on:
+    #   db:
+    #     condition: service_healthy
+    env_file:
+      - ./server/.env
+    environment:
+      # Compose will override DATABASE_URL here if you prefer:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/study_group?schema=public
+      PORT: "3000"
+      NODE_ENV: "production"
+      ALLOWED_ORIGINS: "http://localhost:5173,http://client:5173"
+    ports:
+      - "3000:3000"
+    # If you want to run migrations on startup and you have prisma in devDeps only,
+    # uncomment the command below and switch to Dockerfile.debian-new (build-in-image).
+    # command: ["/bin/sh", "-lc", "npx prisma migrate deploy && node dist/app.js"]
+
+  client:
+    # Provide a Dockerfile inside ./client that serves on 5173
+    build:
+      context: ./client
+      dockerfile: Dockerfile.client
+    container_name: sgp_client
+    depends_on:
+      server:
+        condition: service_started
+    environment:
+      VITE_API_BASE_URL: "http://localhost:3000/api"
+    ports:
+      - "5173:5173"
+
+volumes:
+  db_data:
+  pgadmin_data:

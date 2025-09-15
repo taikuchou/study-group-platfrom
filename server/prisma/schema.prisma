@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int               @id @default(autoincrement())
+  name              String
+  email             String            @unique
+  passwordHash      String?           @map("password_hash")
+  role              UserRole          @default(USER)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  resetToken        String?           @map("reset_token")
+  resetTokenExpiry  DateTime?         @map("reset_token_expiry")
+  googleId          String?           @unique @map("google_id")
+  isProfileComplete Boolean           @default(false) @map("is_profile_complete")
+  picture           String?
+  interactions      Interaction[]
+  sessionAttendees  SessionAttendee[]
+  sessions          Session[]         @relation("SessionPresenter")
+  topicAttendees    TopicAttendee[]
+  createdTopics     Topic[]           @relation("TopicCreator")
+
+  @@map("users")
+}
+
+model Topic {
+  id            Int             @id @default(autoincrement())
+  title         String
+  startDate     DateTime        @map("start_date")
+  endDate       DateTime        @map("end_date")
+  intervalType  IntervalType    @map("interval_type")
+  outline       String?
+  referenceUrls String[]        @map("reference_urls")
+  keywords      String[]
+  createdBy     Int             @map("created_by")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  sessions      Session[]
+  attendees     TopicAttendee[]
+  creator       User            @relation("TopicCreator", fields: [createdBy], references: [id])
+
+  @@map("topics")
+}
+
+model Session {
+  id            Int               @id @default(autoincrement())
+  topicId       Int               @map("topic_id")
+  presenterId   Int               @map("presenter_id")
+  startDateTime DateTime          @map("start_date_time")
+  scope         String
+  outline       String?
+  noteLinks     String[]          @map("note_links")
+  references    Json[]
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  interactions  Interaction[]
+  attendees     SessionAttendee[]
+  presenter     User              @relation("SessionPresenter", fields: [presenterId], references: [id])
+  topic         Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model TopicAttendee {
+  topicId  Int      @map("topic_id")
+  userId   Int      @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+  topic    Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([topicId, userId])
+  @@map("topic_attendees")
+}
+
+model SessionAttendee {
+  sessionId  Int      @map("session_id")
+  userId     Int      @map("user_id")
+  attendedAt DateTime @default(now()) @map("attended_at")
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, userId])
+  @@map("session_attendees")
+}
+
+model Interaction {
+  id          Int                @id @default(autoincrement())
+  type        InteractionType
+  sessionId   Int                @map("session_id")
+  authorId    Int                @map("author_id")
+  content     String?
+  label       String?
+  description String?
+  url         String?
+  category    ReferenceCategory?
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  author      User               @relation(fields: [authorId], references: [id])
+  session     Session            @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("interactions")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum IntervalType {
+  WEEKLY
+  BIWEEKLY
+}
+
+enum InteractionType {
+  QUESTION
+  NOTE_LINK
+  REFERENCE
+  SPEAKER_FEEDBACK
+  WEEKLY_INSIGHT
+  OUTLINE_SUGGESTION
+}
+
+enum ReferenceCategory {
+  WEB
+  BOOK
+  PAPER
+}
