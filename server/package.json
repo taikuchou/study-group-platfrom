@@ -17,6 +17,9 @@
   "keywords": ["study", "group", "platform", "api", "education"],
   "author": "",
   "license": "ISC",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.7.1",
     "express": "^4.18.2",
