@@ -88,8 +88,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLoginSuccess }) => {
       
       // Send the Google credential to our backend for verification
       const credential = credentialResponse.credential;
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-      
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
       // Call the Google OAuth endpoint directly
       const response = await fetch(`${apiUrl}/auth/google`, {
         method: 'POST',

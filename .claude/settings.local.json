@@ -3,7 +3,12 @@
     "allow": [
       "Bash(docker-compose:*)",
       "Bash(docker compose:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(docker:*)",
+      "Bash(docker network:*)",
+      "Read(//Users/crystalbravo/Documents/Projects/資元科技顧問/專案/2026/**)",
+      "Bash(git config:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

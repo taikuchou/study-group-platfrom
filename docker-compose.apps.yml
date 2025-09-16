@@ -1,0 +1,118 @@
+# Application Services - Server and Client
+# Use with database from docker-compose.db.yml
+services:
+  # Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: sgp_apps_server
+    restart: unless-stopped
+    environment:
+      # Database connection - connects to external database network
+      DATABASE_URL: "postgresql://postgres:postgres@sgp_database:5432/study_group_platform?schema=public"
+
+      # JWT Configuration
+      JWT_SECRET: "dev-jwt-secret-key-change-in-production-2024"
+      JWT_REFRESH_SECRET: "dev-refresh-secret-key-change-in-production-2024"
+      JWT_EXPIRE: "15m"
+      JWT_REFRESH_EXPIRE: "7d"
+
+      # Server Configuration
+      PORT: "3000"
+      NODE_ENV: "development"
+
+      # CORS Configuration
+      ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3001,http://client:5173"
+
+      # Default Admin Account
+      DEFAULT_ADMIN_EMAIL: "admin@studygroup.com"
+      DEFAULT_ADMIN_PASSWORD: "admin123"
+      DEFAULT_ADMIN_NAME: "System Administrator"
+    ports:
+      - "3000:3000"
+    volumes:
+      - apps_server_uploads:/app/uploads
+    # - ./server/create-admin.js:/app/create-admin.js:ro
+    # healthcheck:
+    #   test: ["CMD", "node", "-e", "const http = require('http'); const options = { host: 'localhost', port: 3000, path: '/api/health', timeout: 2000 }; const req = http.request(options, (res) => { console.log('STATUS: ' + res.statusCode); process.exitCode = res.statusCode >= 200 && res.statusCode < 300 ? 0 : 1; }); req.on('error', () => { process.exitCode = 1; }); req.end();"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 90s
+    networks:
+      - sgp_shared_network
+    # Simple server startup
+    # command: >
+    #   sh -c "
+    #     echo '🚀 Starting server...' &&
+    #     cat > tsconfig.json << 'EOF'
+    #     {
+    #       \"compilerOptions\": {
+    #         \"target\": \"ES2020\",
+    #         \"module\": \"commonjs\",
+    #         \"moduleResolution\": \"node\",
+    #         \"lib\": [\"ES2020\"],
+    #         \"outDir\": \"./dist\",
+    #         \"rootDir\": \"./src\",
+    #         \"strict\": true,
+    #         \"esModuleInterop\": true,
+    #         \"skipLibCheck\": true,
+    #         \"forceConsistentCasingInFileNames\": true,
+    #         \"resolveJsonModule\": true
+    #       },
+    #       \"include\": [\"src/**/*\"],
+    #       \"exclude\": [\"node_modules\", \"dist\"]
+    #     }
+    #     EOF &&
+    #     echo '✅ Starting development server...' &&
+    #     npm run dev
+    #   "
+
+  # Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+      args:
+        - VITE_API_URL=http://localhost:3000
+    container_name: sgp_apps_client
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      - VITE_API_URL=http://localhost:3000
+      - VITE_API_BASE_URL=http://localhost:3000/api
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount source for hot reload in development
+      - ./client/src:/app/src:ro
+      - ./client/package.json:/app/package.json:ro
+      - ./client/vite.config.ts:/app/vite.config.ts:ro
+      - ./client/tsconfig.json:/app/tsconfig.json:ro
+      - ./client/tailwind.config.ts:/app/tailwind.config.ts:ro
+      - ./client/postcss.config.cjs:/app/postcss.config.cjs:ro
+      - ./client/index.html:/app/index.html:ro
+    networks:
+      - sgp_shared_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # Vite development server
+    command: npm run dev -- --host 0.0.0.0
+
+# Named volumes for data persistence
+volumes:
+  apps_server_uploads:
+    driver: local
+
+# Connect to the shared network created by docker-compose.db.yml
+networks:
+  sgp_shared_network:
+    external: true
+    name: sgp_shared_network

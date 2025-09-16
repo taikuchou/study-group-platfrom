@@ -1,0 +1,106 @@
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:16-alpine
+    container_name: sgp_prod_database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: study_group_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_production_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sgp_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d study_group_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Backend API Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sgp_prod_server
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Database connection
+      DATABASE_URL: "postgresql://postgres:${POSTGRES_PASSWORD:-secure_production_password}@database:5432/study_group_platform?schema=public"
+
+      # JWT Configuration - CHANGE THESE IN PRODUCTION
+      JWT_SECRET: ${JWT_SECRET:-production-jwt-secret-change-me}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-production-refresh-secret-change-me}
+      JWT_EXPIRE: "15m"
+      JWT_REFRESH_EXPIRE: "7d"
+
+      # Server Configuration
+      PORT: "3000"
+      NODE_ENV: "production"
+
+      # CORS Configuration
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-http://localhost:3001,https://yourdomain.com}"
+
+      # Admin Account Configuration
+      DEFAULT_ADMIN_EMAIL: ${DEFAULT_ADMIN_EMAIL:-admin@studygroup.com}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-change_me_in_production}
+      DEFAULT_ADMIN_NAME: ${DEFAULT_ADMIN_NAME:-System Administrator}
+
+      # Google OAuth (optional)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      - server_uploads:/app/uploads
+    networks:
+      - sgp_network
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${API_BASE_URL:-http://localhost:3000}
+        - VITE_API_BASE_URL=${API_BASE_URL:-http://localhost:3000}/api
+        - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+    container_name: sgp_prod_client
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    ports:
+      - "${CLIENT_PORT:-3001}:3001"
+    networks:
+      - sgp_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  sgp_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  server_uploads:
+    driver: local

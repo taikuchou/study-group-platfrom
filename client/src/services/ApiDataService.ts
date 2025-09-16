@@ -2,7 +2,7 @@ import type { DataService } from "./DataService";
 import type { User, Topic, Session, Interaction } from "../types";
 
 /** API service with JWT authentication support */
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
 // Debug BASE_URL
 console.log('ApiDataService BASE_URL:', BASE_URL);

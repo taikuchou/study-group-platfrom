@@ -11,11 +11,40 @@ A full-stack web application for managing study groups, sessions, and collaborat
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- PostgreSQL
-- npm or yarn
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+- npm or yarn (for local development)
 
-### Development Setup
+### Docker Setup (Recommended)
+
+#### Two-File Docker Setup
+See **[README.apps.md](./README.apps.md)** for complete Docker setup guide.
+
+**Quick start:**
+```bash
+# 1. Start database services
+docker compose -f docker-compose.db.yml up -d
+
+# 2. Wait for database to be ready (30 seconds)
+sleep 30
+
+# 3. Start application services
+docker compose -f docker-compose.apps.yml up -d
+
+# 4. Apply database schema
+docker compose -f docker-compose.apps.yml exec server npx prisma db push
+
+# 5. Seed database
+docker compose -f docker-compose.apps.yml exec server npx prisma db seed
+```
+
+**Access:**
+- Frontend: http://localhost:5173
+- API: http://localhost:3000
+- pgAdmin: http://localhost:5050
+- Default Admin: admin@learning.com / password
+
+### Local Development Setup
 
 1. **Database Setup**
 ```bash
@@ -68,11 +97,12 @@ study-group-platform-starter/
 
 ## Core Features
 
-- **User Authentication**: JWT-based authentication with role-based access control
+- **User Authentication**: JWT-based authentication with Google OAuth support
 - **Study Topics**: Create and manage study topics with schedules and participants
 - **Study Sessions**: Individual study sessions within topics with references and notes
 - **Interactions**: Questions, feedback, insights, and reference sharing
 - **Permission System**: Admin/user roles with ownership-based permissions
+- **Docker Support**: Complete containerized development environment
 
 ## API Documentation
 
@@ -81,6 +111,34 @@ A comprehensive Postman collection is available at `/server/Study-Group-Platform
 ---
 
 ## Revision History
+
+### Version 1.2.0 - 2025-09-16
+**Docker Environment & OAuth Integration**
+
+#### 🐳 **Docker Environment Setup**
+- **Two-File Docker Architecture**
+  - `docker-compose.db.yml`: Database services (PostgreSQL + pgAdmin)
+  - `docker-compose.apps.yml`: Application services (Server + Client)
+  - Shared network architecture for service communication
+
+#### 🔐 **Google OAuth Integration**
+- **Database Schema Enhanced**
+  - Added OAuth fields: `google_id`, `reset_token`, `reset_token_expiry`, `is_profile_complete`, `picture`
+  - Schema migration applied successfully
+  - Google OAuth endpoint functional at `/api/auth/google`
+
+#### 🔧 **Configuration Fixes**
+- **Dockerfile References**: Fixed compose files to use correct development Dockerfiles
+- **API Endpoint Alignment**: Resolved client-server endpoint mismatches
+- **Environment Variables**: Proper `VITE_API_BASE_URL` configuration
+
+#### ✅ **Application Services Verified**
+- **Server**: Running on port 3000 with health checks
+- **Client**: Running on port 5173 with hot reload
+- **Database**: PostgreSQL with pgAdmin interface
+- **Authentication**: Both JWT login and Google OAuth functional
+
+---
 
 ### Version 1.1.0 - 2025-09-12
 **Major Data Structure Updates & Server Testing**
@@ -238,6 +296,6 @@ For issues, questions, or contributions, please refer to the project's issue tra
 
 ---
 
-**Last Updated**: September 12, 2025  
-**Version**: 1.1.0  
+**Last Updated**: September 16, 2025
+**Version**: 1.2.0
 **Status**: Active Development
